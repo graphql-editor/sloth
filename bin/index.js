@@ -15,7 +15,7 @@ const node_fetch_1 = require("node-fetch");
 const fs = require("fs");
 const os = require("os");
 const HOST = link => `http://localhost:3000/${link}`;
-const loc = `${os.homedir()}/.slothking.json`;
+const loc = `${os.homedir()}/slothking.json`;
 const requireCredentials = () => new Promise((resolve, reject) => fs.readFile(loc, (e, data) => {
     if (e) {
         console.error(chalk_1.default.red("No credentials file. Please login using: sloth login. If you logged in with github, download credentials file from slothking web app and put it inside home folder as .slothking.json"));

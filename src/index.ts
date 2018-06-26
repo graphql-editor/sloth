@@ -5,7 +5,7 @@ import fetch from "node-fetch";
 import * as fs from "fs";
 import * as os from "os";
 const HOST = link => `http://localhost:3000/${link}`;
-const loc = `${os.homedir()}/.slothking.json`;
+const loc = `${os.homedir()}/slothking.json`;
 
 export type Credentials = {
   username: string;
