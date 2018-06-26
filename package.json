@@ -1,13 +1,11 @@
 {
-  "name": "@slothking/gen-node",
-  "version": "1.0.0",
+  "name": "@slothking/sloth",
+  "version": "0.0.1",
   "description": "",
   "main": "lib/index.js",
   "devDependencies": {
-    "@types/js-yaml": "^3.11.1",
     "@types/node": "^10.1.2",
     "@types/node-fetch": "^2.1.1",
-    "@types/react": "^16.3.14",
     "@types/yargs": "^11.0.0",
     "grunt": "^1.0.2",
     "grunt-contrib-watch": "^1.0.0",
@@ -15,7 +13,7 @@
     "typescript": "^2.8.3"
   },
   "scripts": {
-    "start": "grunt",
+    "build": "grunt",
     "dev": "grunt watch"
   },
   "bin": {
@@ -24,10 +22,7 @@
   "author": "Aexol <aexol@aexol.com> (http://aexol.com)",
   "license": "ISC",
   "dependencies": {
-    "@slothking-online/diagram": "^0.1.20",
-    "@slothking-online/node": "^1.0.0",
     "chalk": "^2.4.1",
-    "js-yaml": "^3.11.0",
     "node-fetch": "^2.1.2",
     "yargs": "^11.0.0"
   }
