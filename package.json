@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "description": "",
   "main": "lib/index.js",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/node": "^10.1.2",
     "@types/node-fetch": "^2.1.1",
