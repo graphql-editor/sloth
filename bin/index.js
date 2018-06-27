@@ -14,7 +14,7 @@ const chalk_1 = require("chalk");
 const node_fetch_1 = require("node-fetch");
 const fs = require("fs");
 const os = require("os");
-const HOST = link => `http://localhost:3000/${link}`;
+const HOST = link => `https://slothking-backend.aexol.com/${link}`;
 const loc = `${os.homedir()}/slothking.json`;
 const requireCredentials = () => new Promise((resolve, reject) => fs.readFile(loc, (e, data) => {
     if (e) {
