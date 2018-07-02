@@ -14,9 +14,12 @@ const chalk_1 = require("chalk");
 const node_fetch_1 = require("node-fetch");
 const fs = require("fs");
 const os = require("os");
-const H = 'https://slothking-backend.aexol.com';
+const H = process.env.DEV
+    ? "http://localhost:3000"
+    : "https://slothking-backend.aexol.com";
 const HOST = link => `${H}/${link}`;
 const loc = `${os.homedir()}/slothking.json`;
+console.log(`Current host = ${H}\n`);
 const requireCredentials = () => new Promise((resolve, reject) => fs.readFile(loc, (e, data) => {
     if (e) {
         console.error(chalk_1.default.red("No credentials file. Please login using: sloth login. If you logged in with github, download credentials file from slothking web app and put it inside home folder as .slothking.json"));
@@ -99,6 +102,9 @@ const argv = yargs
 }))
     .command("corona-sdk <project> <path>", "Reads slothking project to a corona SDK api specified in path", {}, (argv) => __awaiter(this, void 0, void 0, function* () {
     yield codeSaver("generateCoronaSDK", argv.project, argv.path);
+}))
+    .command("schema <project> <path>", "Reads slothking project to a form kind schema api specified in path", {}, (argv) => __awaiter(this, void 0, void 0, function* () {
+    yield codeSaver("generateSchema", argv.project, argv.path);
 }))
     .help().argv;
 argv;

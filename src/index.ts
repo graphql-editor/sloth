@@ -5,8 +5,9 @@ import fetch from "node-fetch";
 import * as fs from "fs";
 import * as os from "os";
 
-const H = 'https://slothking-backend.aexol.com'
-// const H = 'http://localhost:3000'
+const H = process.env.DEV
+  ? "http://localhost:3000"
+  : "https://slothking-backend.aexol.com";
 const HOST = link => `${H}/${link}`;
 const loc = `${os.homedir()}/slothking.json`;
 
@@ -14,7 +15,7 @@ export type Credentials = {
   username: string;
   token: string;
 };
-
+console.log(`Current host = ${H}\n`)
 const requireCredentials = (): Promise<Credentials> =>
   new Promise((resolve, reject) =>
     fs.readFile(loc, (e, data) => {
@@ -92,15 +93,19 @@ const argv = yargs
     {},
     async argv => {
       console.log(chalk.white("Registering..."));
-      if(argv.password !== argv.repeat_password){
-        return chalk.red("Password mismatch")
+      if (argv.password !== argv.repeat_password) {
+        return chalk.red("Password mismatch");
       }
       try {
         let parsed = await (await fetch(
-          HOST(`user/register?username=${argv.username}&password=${argv.password}`)
+          HOST(
+            `user/register?username=${argv.username}&password=${argv.password}`
+          )
         )).json();
         if (parsed.token) {
-          console.log(chalk.green(`Registered & Logged in, credentials stored in: ${loc}`));
+          console.log(
+            chalk.green(`Registered & Logged in, credentials stored in: ${loc}`)
+          );
           fs.writeFile(loc, JSON.stringify(parsed), e => {});
         } else {
           console.log(chalk.red("Username already exists"));
@@ -132,6 +137,14 @@ const argv = yargs
     {},
     async argv => {
       await codeSaver("generateCoronaSDK", argv.project, argv.path);
+    }
+  )
+  .command(
+    "schema <project> <path>",
+    "Reads slothking project to a form kind schema api specified in path",
+    {},
+    async argv => {
+      await codeSaver("generateSchema", argv.project, argv.path);
     }
   )
   .help().argv;
