@@ -4,7 +4,10 @@ import chalk from "chalk";
 import fetch from "node-fetch";
 import * as fs from "fs";
 import * as os from "os";
-const HOST = link => `https://slothking-backend.aexol.com/${link}`;
+
+const H = 'https://slothking-backend.aexol.com'
+// const H = 'http://localhost:3000'
+const HOST = link => `${H}/${link}`;
 const loc = `${os.homedir()}/slothking.json`;
 
 export type Credentials = {
@@ -26,7 +29,27 @@ const requireCredentials = (): Promise<Credentials> =>
       return resolve(JSON.parse(data.toString()) as Credentials);
     })
   );
-
+const codeSaver = async (generator: string, project: string, path?: string) => {
+  try {
+    const credentials: Credentials = await requireCredentials();
+    console.log(
+      chalk.green(
+        `Reading slothking project and writing to folder with generator: ${generator}`
+      )
+    );
+    let parsed = await (await fetch(
+      HOST(`sloth/${generator}?name=${project}&token=${credentials.token}`)
+    )).json();
+    let location = path || "./slothking_generated.ts";
+    fs.writeFile(location, parsed.code, e => {
+      if (e) {
+        console.error(e);
+      }
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
 const argv = yargs
   .command("logout", "Logout from your slothking account", {}, async argv => {
     console.log(chalk.redBright("Logging out..."));
@@ -64,32 +87,51 @@ const argv = yargs
     }
   )
   .command(
-    "nodets <project> <path>",
-    "Reads slothking project to a typescript file specified in path",
+    "register <username> <password> <repeat_password>",
+    "Register new slothking account",
     {},
     async argv => {
-      try {
-        const credentials: Credentials = await requireCredentials();
-        console.log(
-          chalk.green("Reading slothking project and writing to folder")
-        );
-
-        let parsed = await (await fetch(
-          HOST(
-            `sloth/generateBackendTS?name=${argv.project}&token=${
-              credentials.token
-            }`
-          )
-        )).json();
-        let location = argv.path || "./slothking_generated.ts";
-        fs.writeFile(location, parsed.code, e => {
-          if (e) {
-            console.error(e);
-          }
-        });
-      } catch (error) {
-        console.error(error);
+      console.log(chalk.white("Registering..."));
+      if(argv.password !== argv.repeat_password){
+        return chalk.red("Password mismatch")
       }
+      try {
+        let parsed = await (await fetch(
+          HOST(`user/register?username=${argv.username}&password=${argv.password}`)
+        )).json();
+        if (parsed.token) {
+          console.log(chalk.green(`Registered & Logged in, credentials stored in: ${loc}`));
+          fs.writeFile(loc, JSON.stringify(parsed), e => {});
+        } else {
+          console.log(chalk.red("Username already exists"));
+        }
+      } catch (e) {
+        console.log(chalk.red("Username already exists"));
+      }
+    }
+  )
+  .command(
+    "nodets <project> <path>",
+    "Reads slothking project to a typescript backend file specified in path",
+    {},
+    async argv => {
+      await codeSaver("generateBackendTS", argv.project, argv.path);
+    }
+  )
+  .command(
+    "fetch-api <project> <path>",
+    "Reads slothking project to a typescript fetch api specified in path",
+    {},
+    async argv => {
+      await codeSaver("generateFetchApi", argv.project, argv.path);
+    }
+  )
+  .command(
+    "corona-sdk <project> <path>",
+    "Reads slothking project to a corona SDK api specified in path",
+    {},
+    async argv => {
+      await codeSaver("generateCoronaSDK", argv.project, argv.path);
     }
   )
   .help().argv;

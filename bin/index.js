@@ -14,7 +14,8 @@ const chalk_1 = require("chalk");
 const node_fetch_1 = require("node-fetch");
 const fs = require("fs");
 const os = require("os");
-const HOST = link => `https://slothking-backend.aexol.com/${link}`;
+const H = 'https://slothking-backend.aexol.com';
+const HOST = link => `${H}/${link}`;
 const loc = `${os.homedir()}/slothking.json`;
 const requireCredentials = () => new Promise((resolve, reject) => fs.readFile(loc, (e, data) => {
     if (e) {
@@ -23,6 +24,22 @@ const requireCredentials = () => new Promise((resolve, reject) => fs.readFile(lo
     }
     return resolve(JSON.parse(data.toString()));
 }));
+const codeSaver = (generator, project, path) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const credentials = yield requireCredentials();
+        console.log(chalk_1.default.green(`Reading slothking project and writing to folder with generator: ${generator}`));
+        let parsed = yield (yield node_fetch_1.default(HOST(`sloth/${generator}?name=${project}&token=${credentials.token}`))).json();
+        let location = path || "./slothking_generated.ts";
+        fs.writeFile(location, parsed.code, e => {
+            if (e) {
+                console.error(e);
+            }
+        });
+    }
+    catch (error) {
+        console.error(error);
+    }
+});
 const argv = yargs
     .command("logout", "Logout from your slothking account", {}, (argv) => __awaiter(this, void 0, void 0, function* () {
     console.log(chalk_1.default.redBright("Logging out..."));
@@ -55,21 +72,33 @@ const argv = yargs
         console.log(chalk_1.default.red("Wrong username or password"));
     }
 }))
-    .command("nodets <project> <path>", "Reads slothking project to a typescript file specified in path", {}, (argv) => __awaiter(this, void 0, void 0, function* () {
+    .command("register <username> <password> <repeat_password>", "Register new slothking account", {}, (argv) => __awaiter(this, void 0, void 0, function* () {
+    console.log(chalk_1.default.white("Registering..."));
+    if (argv.password !== argv.repeat_password) {
+        return chalk_1.default.red("Password mismatch");
+    }
     try {
-        const credentials = yield requireCredentials();
-        console.log(chalk_1.default.green("Reading slothking project and writing to folder"));
-        let parsed = yield (yield node_fetch_1.default(HOST(`sloth/generateBackendTS?name=${argv.project}&token=${credentials.token}`))).json();
-        let location = argv.path || "./slothking_generated.ts";
-        fs.writeFile(location, parsed.code, e => {
-            if (e) {
-                console.error(e);
-            }
-        });
+        let parsed = yield (yield node_fetch_1.default(HOST(`user/register?username=${argv.username}&password=${argv.password}`))).json();
+        if (parsed.token) {
+            console.log(chalk_1.default.green(`Registered & Logged in, credentials stored in: ${loc}`));
+            fs.writeFile(loc, JSON.stringify(parsed), e => { });
+        }
+        else {
+            console.log(chalk_1.default.red("Username already exists"));
+        }
     }
-    catch (error) {
-        console.error(error);
+    catch (e) {
+        console.log(chalk_1.default.red("Username already exists"));
     }
+}))
+    .command("nodets <project> <path>", "Reads slothking project to a typescript backend file specified in path", {}, (argv) => __awaiter(this, void 0, void 0, function* () {
+    yield codeSaver("generateBackendTS", argv.project, argv.path);
+}))
+    .command("fetch-api <project> <path>", "Reads slothking project to a typescript fetch api specified in path", {}, (argv) => __awaiter(this, void 0, void 0, function* () {
+    yield codeSaver("generateFetchApi", argv.project, argv.path);
+}))
+    .command("corona-sdk <project> <path>", "Reads slothking project to a corona SDK api specified in path", {}, (argv) => __awaiter(this, void 0, void 0, function* () {
+    yield codeSaver("generateCoronaSDK", argv.project, argv.path);
 }))
     .help().argv;
 argv;
