@@ -3,7 +3,7 @@ Sloth CLI is dedicated for use with [slothking.online](https://slothking.online)
 
 ## Installation
 ```sh
-$ npm install -g sloth
+$ npm install -g @slothking-online/sloth
 ```
 
 ## Login
