@@ -17,8 +17,18 @@ const os = require("os");
 const H = process.env.DEV
     ? "http://localhost:3000"
     : "https://slothking-backend.aexol.com";
+const WS = process.env.DEV
+    ? "ws://localhost:3000"
+    : "wss://slothking-backend.aexol.com";
+const socketClient = require("socket.io-client");
 const HOST = link => `${H}/${link}`;
 const loc = `${os.homedir()}/slothking.json`;
+const APIS = {
+    nodets: "generateBackendTS",
+    "fetch-api": "generateFetchApi",
+    "corona-sdk": "generateCoronaSDK",
+    schema: "generateSchema"
+};
 console.log(`Current host = ${H}\n`);
 const requireCredentials = () => new Promise((resolve, reject) => fs.readFile(loc, (e, data) => {
     if (e) {
@@ -94,6 +104,21 @@ const argv = yargs
         console.log(chalk_1.default.red("Username already exists"));
     }
 }))
+    .command("sync <api> <project> <path>", "Reads slothking project to a typescript backend file specified in path", {}, (argv) => __awaiter(this, void 0, void 0, function* () {
+    const socket = socketClient(WS);
+    socket.on("connect", function () {
+        console.log("Connected to websocket");
+    });
+    socket.on(argv.project, function (data) {
+        console.log(`Project ${argv.project} updated`);
+        codeSaver(APIS[argv.api], argv.project, argv.path);
+        console.log(`Waiting for updates`);
+    });
+    socket.on("disconnect", function () {
+        console.log("Disconnected to websocket");
+    });
+}))
+    .exitProcess(false)
     .command("nodets <project> <path>", "Reads slothking project to a typescript backend file specified in path", {}, (argv) => __awaiter(this, void 0, void 0, function* () {
     yield codeSaver("generateBackendTS", argv.project, argv.path);
 }))

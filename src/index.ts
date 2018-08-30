@@ -8,14 +8,28 @@ import * as os from "os";
 const H = process.env.DEV
   ? "http://localhost:3000"
   : "https://slothking-backend.aexol.com";
+
+const WS = process.env.DEV
+  ? "ws://localhost:3000"
+  : "wss://slothking-backend.aexol.com";
+
+const socketClient = require("socket.io-client");
+
 const HOST = link => `${H}/${link}`;
 const loc = `${os.homedir()}/slothking.json`;
+
+const APIS = {
+  nodets: "generateBackendTS",
+  "fetch-api": "generateFetchApi",
+  "corona-sdk": "generateCoronaSDK",
+  schema: "generateSchema"
+};
 
 export type Credentials = {
   username: string;
   token: string;
 };
-console.log(`Current host = ${H}\n`)
+console.log(`Current host = ${H}\n`);
 const requireCredentials = (): Promise<Credentials> =>
   new Promise((resolve, reject) =>
     fs.readFile(loc, (e, data) => {
@@ -51,6 +65,7 @@ const codeSaver = async (generator: string, project: string, path?: string) => {
     console.error(error);
   }
 };
+
 const argv = yargs
   .command("logout", "Logout from your slothking account", {}, async argv => {
     console.log(chalk.redBright("Logging out..."));
@@ -115,6 +130,26 @@ const argv = yargs
       }
     }
   )
+  .command(
+    "sync <api> <project> <path>",
+    "Reads slothking project to a typescript backend file specified in path",
+    {},
+    async argv => {
+      const socket = socketClient(WS);
+      socket.on("connect", function() {
+        console.log("Connected to websocket");
+      });
+      socket.on(argv.project, function(data) {
+        console.log(`Project ${argv.project} updated`);
+        codeSaver(APIS[argv.api], argv.project, argv.path);
+        console.log(`Waiting for updates`);
+      });
+      socket.on("disconnect", function() {
+        console.log("Disconnected to websocket");
+      });
+    }
+  )
+  .exitProcess(false)
   .command(
     "nodets <project> <path>",
     "Reads slothking project to a typescript backend file specified in path",
